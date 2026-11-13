@@ -16,6 +16,10 @@ const bookSchema = new mongoose.Schema({
     enum: ['available', 'borrowed'],
     required: true,
     default: 'available'
+  },
+  borrowedBy: {
+    type: String,
+    trim: true
   }
 });
 
