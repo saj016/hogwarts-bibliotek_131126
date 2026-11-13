@@ -6,6 +6,7 @@ function createBookRouter(controller = bookController) {
   router.get('/', controller.getBooks);
   router.post('/', controller.createBook);
   router.post('/:id/borrow', controller.borrowBook);
+  router.post('/:id/return', controller.returnBook);
   return router;
 }
 

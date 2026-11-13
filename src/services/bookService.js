@@ -74,11 +74,23 @@ function createBookService(repository = bookRepository) {
     throw new BookServiceError(409, 'Book is already borrowed.');
   }
 
+  async function returnBook(id) {
+    if (!mongoose.isValidObjectId(id)) {
+      throw new BookServiceError(400, 'Book is not borrowed.');
+    }
+
+    const book = await repository.returnIfBorrowed(id);
+    if (!book) {
+      throw new BookServiceError(400, 'Book is not borrowed.');
+    }
+    return book;
+  }
+
   async function ensureInitialBooks() {
     return repository.ensureSeedBooks(initialBooks);
   }
 
-  return { listBooks, createBook, borrowBook, ensureInitialBooks };
+  return { listBooks, createBook, borrowBook, returnBook, ensureInitialBooks };
 }
 
 module.exports = { ...createBookService(), createBookService, BookServiceError };

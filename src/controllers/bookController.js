@@ -35,7 +35,16 @@ function createBookController(service = bookService) {
     }
   }
 
-  return { getBooks, createBook, borrowBook };
+  async function returnBook(request, response, next) {
+    try {
+      const book = await service.returnBook(request.params.id);
+      response.json(book);
+    } catch (error) {
+      handleError(error, response, next);
+    }
+  }
+
+  return { getBooks, createBook, borrowBook, returnBook };
 }
 
 module.exports = { ...createBookController(), createBookController };

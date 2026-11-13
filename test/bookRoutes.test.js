@@ -29,6 +29,15 @@ function createTestApp() {
       book.status = 'borrowed';
       book.borrowedBy = studentName;
       return book;
+    },
+    async returnIfBorrowed(id) {
+      const book = books.get(id);
+      if (!book || book.status !== 'borrowed') {
+        return null;
+      }
+      book.status = 'available';
+      delete book.borrowedBy;
+      return book;
     }
   };
   const service = createBookService(repository);
@@ -116,4 +125,36 @@ test('POST /api/books/:id/borrow returns 404 for an unknown book ID', async () =
   const response = await request(app, `/api/books/${bookId}/borrow`, jsonOptions({ studentName: 'Harry Potter' }));
 
   assert.equal(response.status, 404);
+});
+
+test('POST /api/books/:id/return makes a borrowed book available and clears its borrower', async () => {
+  const { app, books } = createTestApp();
+  books.set(bookId, {
+    _id: bookId,
+    title: 'Hogwarts: A History',
+    author: 'Bathilda Bagshot',
+    status: 'borrowed',
+    borrowedBy: 'Harry Potter'
+  });
+
+  const response = await request(app, `/api/books/${bookId}/return`, { method: 'POST' });
+  const returnedBook = await response.json();
+
+  assert.equal(response.status, 200);
+  assert.equal(returnedBook.status, 'available');
+  assert.equal('borrowedBy' in returnedBook, false);
+});
+
+test('POST /api/books/:id/return returns 400 for a book that is not borrowed', async () => {
+  const { app, books } = createTestApp();
+  books.set(bookId, {
+    _id: bookId,
+    title: 'Hogwarts: A History',
+    author: 'Bathilda Bagshot',
+    status: 'available'
+  });
+
+  const response = await request(app, `/api/books/${bookId}/return`, { method: 'POST' });
+
+  assert.equal(response.status, 400);
 });

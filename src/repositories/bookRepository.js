@@ -23,6 +23,14 @@ async function borrowIfAvailable(id, studentName) { // This function attempts to
   ).lean().exec();
 }
 
+async function returnIfBorrowed(id) {
+  return Book.findOneAndUpdate(
+    { _id: id, status: 'borrowed' },
+    { $set: { status: 'available' }, $unset: { borrowedBy: 1 } },
+    { new: true, runValidators: true }
+  ).lean().exec();
+}
+
 async function ensureSeedBooks(books) {
   await Book.bulkWrite( // BulkWrite allows for multiple write operations in a single request, which can be more efficient than individual writes.
     books.map((book) => ({
@@ -35,4 +43,4 @@ async function ensureSeedBooks(books) {
   );
 }
 
-module.exports = { findAll, create, findById, borrowIfAvailable, ensureSeedBooks };
+module.exports = { findAll, create, findById, borrowIfAvailable, returnIfBorrowed, ensureSeedBooks };
